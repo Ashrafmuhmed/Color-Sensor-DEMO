@@ -1,26 +1,34 @@
-import Tone from 'tone';
+console.log("audio.js: Starting execution...");
 
 export class AudioManager {
     constructor() {
-        this.synth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: 'sine' },
-            envelope: { decay: 0.1, sustain: 0.3, release: 0.5 }
-        }).toDestination();
+        try {
+            this.synth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: 'sine' },
+                envelope: { decay: 0.1, sustain: 0.3, release: 0.5 }
+            }).toDestination();
 
-        this.reverb = new Tone.Reverb({
-            decay: 2,
-            wet: 0.3
-        }).toDestination();
+            this.reverb = new Tone.Reverb({
+                decay: 2,
+                wet: 0.3
+            }).toDestination();
 
-        this.synth.connect(this.reverb);
+            this.synth.connect(this.reverb);
+        } catch (error) {
+            console.error("audio.js: Error in constructor:", error);
+            throw error;
+        }
     }
 
     async startAudioContext() {
         try {
-            await Tone.start();
-            console.log("Audio context started");
+            if (Tone.context.state !== 'running') {
+                await Tone.start();
+            } else {
+                console.log("audio.js: Audio context already running");
+            }
         } catch (error) {
-            console.error("Error starting audio context:", error);
+            console.error("audio.js: Error starting audio context:", error);
             throw error;
         }
     }
@@ -30,21 +38,32 @@ export class AudioManager {
             this.synth.triggerAttackRelease(note, duration);
             return note;
         } catch (error) {
-            console.error("Error playing note:", error);
+            console.error("audio.js: Error playing note:", error);
             throw error;
         }
     }
 
     announce(color, note) {
-        if (!speechSynthesis.speaking) {
-            const utterance = new SpeechSynthesisUtterance(`Color: ${color.name}, Note: ${note}`);
-            utterance.rate = 1.2;
-            utterance.pitch = 1.1;
-            speechSynthesis.speak(utterance);
+        try {
+            if (!speechSynthesis.speaking) {
+                const utterance = new SpeechSynthesisUtterance(`Color: ${color.name}, Note: ${note}`);
+                utterance.rate = 1.2;
+                utterance.pitch = 1.1;
+                speechSynthesis.speak(utterance);
+            } else {
+                console.log("audio.js: Speech synthesis already speaking, skipping announcement");
+            }
+        } catch (error) {
+            console.error("audio.js: Error in announce:", error);
         }
     }
 
     stopAnnouncements() {
-        speechSynthesis.cancel();
+        try {
+            speechSynthesis.cancel();
+        } catch (error) {
+            console.error("audio.js: Error in stopAnnouncements:", error);
+        }
     }
 }
+
