@@ -15,25 +15,28 @@ export const munsellColorTable = [
     { name: "Light Pink (5RP)", hue: "5RP", value: 8, chroma: 6, rgb: [220, 150, 170], note: "B4", lab: null }
 ];
 
+// Pre-calculate Lab values for color table
 munsellColorTable.forEach(color => {
     color.lab = window.colorConvert.rgb.lab(color.rgb);
 });
 
+// Convert RGB to Lab using color-convert
 function rgbToLab(rgb) {
     console.log("colorUtils.js: Checking if colorConvert is available:", !!window.colorConvert);
     if (!window.colorConvert) {
         throw new Error("color-convert library not loaded. Ensure the script is included and loaded correctly.");
     }
     try {
-        const lab = colorConvert.rgb.lab(rgb);
-        console.log("colorUtils.js: Converted RGB to Lab:", rgb, "->", lab); // Temporary logging
+        const lab = window.colorConvert.rgb.lab(rgb);
+        console.log("colorUtils.js: Converted RGB to Lab:", rgb, "->", lab);
         return lab;
     } catch (error) {
         console.error("colorUtils.js: Error converting RGB to Lab:", error);
-        return [50, 0, 0]; // Fallback to a neutral Lab value
+        return [50, 0, 0]; // Fallback to neutral Lab value
     }
 }
 
+// Calculate Lab color distance
 function labDistance(lab1, lab2) {
     const [L1, a1, b1] = lab1;
     const [L2, a2, b2] = lab2;
@@ -46,16 +49,16 @@ function labDistance(lab1, lab2) {
 
 export function detectColor(r, g, b, colorTable) {
     try {
-        // Convert RGB to Lab
+        // Convert input RGB to Lab
         const detectedLab = rgbToLab([r, g, b]);
 
-        // Find the closest color in the table based on Lab distance
+        // Find closest color based on Lab distance
         let closestColor = null;
         let minDistance = Infinity;
 
         colorTable.forEach(color => {
             const distance = labDistance(detectedLab, color.lab);
-            console.log(`colorUtils.js: Distance to ${color.name}: ${distance}`); // Temporary logging
+            console.log(`colorUtils.js: Distance to ${color.name}: ${distance}`);
             if (distance < minDistance) {
                 minDistance = distance;
                 closestColor = color;
@@ -63,11 +66,11 @@ export function detectColor(r, g, b, colorTable) {
         });
 
         if (closestColor) {
-            console.log(`colorUtils.js: Closest color: ${closestColor.name} (Distance: ${minDistance})`); // Temporary logging
+            console.log(`colorUtils.js: Closest color: ${closestColor.name} (Distance: ${minDistance})`);
             return closestColor;
         }
 
-        // Fallback if no close match is found
+        // Fallback if no close match found
         return {
             name: "unknown",
             hue: "unknown",
@@ -77,6 +80,7 @@ export function detectColor(r, g, b, colorTable) {
             note: "C4"
         };
     } catch (error) {
+        console.error("colorUtils.js: Error in detectColor:", error);
         return { name: "error", hue: "unknown", value: 5, chroma: 5, rgb: [r, g, b], note: "C4" };
     }
 }
@@ -95,6 +99,7 @@ export function getPixelFromCanvas(ctx, x, y) {
         const pixel = ctx.getImageData(x, y, 1, 1).data;
         let [r, g, b] = [pixel[0], pixel[1], pixel[2]];
 
+        // Enhanced version with region sampling from 'main' branch
         const width = ctx.canvas.width;
         const height = ctx.canvas.height;
         const regionSize = 5;
@@ -120,12 +125,10 @@ export function getPixelFromCanvas(ctx, x, y) {
             b = (b / maxChannel) * 255;
         }
 
-        console.log("colorUtils.js: Normalized RGB:", [r, g, b]); // Temporary logging
+        console.log("colorUtils.js: Normalized RGB:", [r, g, b]);
         return [Math.round(r), Math.round(g), Math.round(b)];
     } catch (error) {
         console.error("colorUtils.js: Error in getPixelFromCanvas:", error);
         return [0, 0, 0];
     }
 }
-
-

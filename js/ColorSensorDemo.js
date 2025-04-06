@@ -1,8 +1,27 @@
-import { defaultColorTable, detectColor, getRGBString, getPixelFromCanvas } from './colorUtils.js';
+import { munsellColorTable, detectColor, getRGBString, getPixelFromCanvas } from './colorUtils.js';
 import { AudioManager } from './audio.js';
 
 export class ColorSensorDemo {
     constructor() {
+        try {
+            this.stream = null;
+            this.isRunning = false;
+            this.colorHistoryArray = [];
+            this.maxHistoryLength = 10;
+            this.colorTable = [...munsellColorTable];
+            this.audioManager = new AudioManager();
+
+            this.canvas = document.createElement('canvas');
+            this.canvas.width = 640;
+            this.canvas.height = 480;
+            this.ctx = this.canvas.getContext('2d');
+        } catch (error) {
+            console.error("ColorSensorDemo.js: Error in constructor:", error);
+            throw error;
+        }
+    }
+
+    init() {
         try {
             this.video = document.getElementById('video');
             this.status = document.getElementById('status');
@@ -14,18 +33,6 @@ export class ColorSensorDemo {
             if (!this.video || !this.status || !this.startBtn || !this.stopBtn || !this.colorOverlay || !this.colorHistory) {
                 throw new Error("One or more DOM elements not found.");
             }
-
-            this.stream = null;
-            this.isRunning = false;
-            this.colorHistoryArray = [];
-            this.maxHistoryLength = 10;
-            this.colorTable = [...defaultColorTable];
-            this.audioManager = new AudioManager();
-
-            this.canvas = document.createElement('canvas');
-            this.canvas.width = 640;
-            this.canvas.height = 480;
-            this.ctx = this.canvas.getContext('2d');
 
             this.setupEventListeners();
         } catch (error) {
