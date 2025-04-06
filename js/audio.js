@@ -1,5 +1,3 @@
-console.log("audio.js: Starting execution...");
-
 export class AudioManager {
     constructor() {
         try {
@@ -24,8 +22,6 @@ export class AudioManager {
         try {
             if (Tone.context.state !== 'running') {
                 await Tone.start();
-            } else {
-                console.log("audio.js: Audio context already running");
             }
         } catch (error) {
             console.error("audio.js: Error starting audio context:", error);
@@ -50,8 +46,6 @@ export class AudioManager {
                 utterance.rate = 1.2;
                 utterance.pitch = 1.1;
                 speechSynthesis.speak(utterance);
-            } else {
-                console.log("audio.js: Speech synthesis already speaking, skipping announcement");
             }
         } catch (error) {
             console.error("audio.js: Error in announce:", error);
@@ -66,4 +60,3 @@ export class AudioManager {
         }
     }
 }
-
